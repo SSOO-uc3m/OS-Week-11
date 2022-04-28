@@ -252,13 +252,13 @@ void exercise02 (void)
 Implementation of function print()
 
 ````
-void *print (void *arg){
+void *print (void *arg) {
   
-        char cadena_hola[] = "Hello ";
+        char stringHi[] = "Hello ";
         char a[12];
         pthread_mutex_lock (&printer);
         strcpy(a, (char*)arg);
-        if (strncmp(a,cadena_hola,5)==0) {
+        if (strncmp(a,stringHi,5)==0) {
           while (!printHi) {                          
                     pthread_cond_wait(&printHello,&printer);
           }
@@ -315,46 +315,44 @@ All the options
 Implementation de la solution to reader-writers problems
 
 ````
-void * Lector(void *p) {
+void * reader(void *p) {
     long i=(long)p;
     while(1) {
         pthread_mutex_lock(&mutex);
-        if(escribiendo)
-            pthread_cond_wait(&leer,&mutex);
-        leyendo++;
+        if(isWriting)
+            pthread_cond_wait(&reading,&myMutex);
+        isReading++;
         pthread_mutex_unlock(&mutex);
 
-        printf(“Lector %ld: Dato = %d\n", i, dato);
-        sleep(1); //tardo 1s en leer
+        printf("Reader %ld: Data = %d\n", i, data);
+        sleep(1); //takes 1 sec to read
 
         pthread_mutex_lock(&mutex);
-        leyendo--;
-        if(!leyendo)
-            pthread_cond_signal(&escribir);
-        pthread_mutex_unlock(&mutex);
+        isReading--;
+        if(!isReading)
+            pthread_cond_signal(&reading);
+        pthread_mutex_unlock(&myMutex);
     }
 }
 
 ````
 
 ````
-void * Escritor(void * p)
-{
+void * writer(void * p) {
    long i=(long)p;
-   while(1)
-   {
+   while(1)   {
         pthread_mutex_lock(&mutex);
-        while(leyendo||escribiendo)
-            pthread_cond_wait(&escribir,&mutex);
-        escribiendo++;
+        while(isReading||isWriting)
+            pthread_cond_wait(&writing,&mutex);
+        isWriting++;
         pthread_mutex_unlock(&mutex);
         sleep(1); //tardo 1 sg en escribir
-        dato+=2;
-        printf(“Escritor %ld: Dato = %d\n", i, dato);
+        data+=2;
+        printf("writer %ld: Dato = %d\n", i, data);
         pthread_mutex_lock(&mutex);
-        escribiendo--;
-        pthread_cond_broadcast(&escribir);
-        pthread_cond_broadcast(&leer);
+        isWriting--;
+        pthread_cond_broadcast(&writing);
+        pthread_cond_broadcast(&reading);
         pthread_mutex_unlock(&mutex);
    }
 }

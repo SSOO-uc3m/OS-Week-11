@@ -97,11 +97,11 @@ void exercise02 () {
 
 void *print (void *arg) {
   
-        char cadena_hola[] = "Hello ";
+        char stringHi[] = "Hello ";
         char a[12];
         pthread_mutex_lock (&printer);
         strcpy(a, (char*)arg);
-        if (strncmp(a,cadena_hola,5)==0) {
+        if (strncmp(a,stringHi,5)==0) {
           while (!printHi) {                          
                     pthread_cond_wait(&printHello,&printer);
           }
