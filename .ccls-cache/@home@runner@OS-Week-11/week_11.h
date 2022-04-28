@@ -15,4 +15,8 @@ void * reader(void *p) ;
 
 void * writer(void *p) ;
 
+void exercise04();
+
+void *worker(void *arg);
+
 #endif /* WEEK_11_H */

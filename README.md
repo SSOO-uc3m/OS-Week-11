@@ -365,65 +365,78 @@ Which alternative to the readers and writers problem is solved by the following 
 
 - Priority for Readers 
 - Priority for Writers
-
+- 
 ###  Exercise 04
 
-What execution secuence will create a deadlock?
+Indicate what the following code does
 
-```
+````
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <pthread.h>
-#include <unistd.h>
 
-pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
+#define N 10
+#define SIZE 1024
 
-void* print_ssoo(void *ptr);
+void *worker(void *arg);
 
-void* print_new_line(void *ptr);
+int array[SIZE];
 
-int main() {
+struct b_s {
+  int n;
+  pthread_mutex_t m;
+  pthread_cond_t ll;
+} b;
 
-    pthread_t t1, t2;
-    
-    pthread_create(&t1, NULL, print_ssoo, NULL);
-    pthread_create(&t2, NULL, print_new_line, NULL);
-    
-    pthread_join(t1,NULL);
-    pthread_join(t2,NULL);
+
+void exercise04(void) {
+  pthread_t thread[N];
+  
+  	
+  b.n = 0;
+  pthread_mutex_init(&b.m, NULL);
+  pthread_cond_init(&b.ll, NULL);
+
+  
+  for(int i=0; i<N; i++)
+    pthread_create(&thread[i],  NULL, worker,  (void *)&i);
+  
+  for(int i=0; i<N; i++)
+    pthread_join(thread[i], NULL);
+
+  pthread_cond_destroy(&b.ll);
+  pthread_mutex_destroy(&b.m);
+ 
 }
 
-void* print_ssoo(void *ptr) {
+void *worker(void *arg) {
 
-    pthread_mutex_lock(&mutex1);
-    pthread_mutex_lock(&mutex2);
-    
-    printf("SSOO");
-    
-    pthread_mutex_unlock(&mutex2);
-    pthread_mutex_unlock(&mutex1);
-    
-    pthread_exit(0);
+  int start=0, end=0, id;
 
+  id  = *(int *)arg; 
+  start =(id)*(SIZE/N);
+  
+  end = (id+1)*(SIZE/N);
+  
+  for(int i=start; i<end; i++) {
+  	array[i] = id;
+  }
+  
+  pthread_mutex_lock(&b.m); 
+  b.n++; 
+  
+  if (N<=b.n) {	
+    pthread_cond_broadcast(&b.ll);
+  } 
+  else {
+  	pthread_cond_wait(&b.ll, &b.m); 
+  }
+  pthread_mutex_unlock(&b.m); 
+  	
 }
 
-void* print_new_line(void *ptr) {
 
-    pthread_mutex_lock(&mutex2);
-    pthread_mutex_lock(&mutex1);
-    
-    printf("\n");
-    
-    pthread_mutex_unlock(&mutex1);
-    pthread_mutex_unlock(&mutex2);
-    
-    pthread_exit(0);
-}
-```
-
-![Diagram_06](img/img6.png)
+````
 
 ###  Exercise 05
 

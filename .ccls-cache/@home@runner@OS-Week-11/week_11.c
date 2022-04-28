@@ -122,8 +122,8 @@ void *print (void *arg) {
 }
 
 /*******************************************************
-Exercise 03
 
+Exercise 03
 
 
 ********************************************************/
@@ -173,4 +173,67 @@ void * writer(void * p) {
         pthread_cond_broadcast(&reading);
         pthread_mutex_unlock(&mutex);
    }
+}
+/*******************************************************
+
+Exercise 04
+
+
+********************************************************/
+#define N 10
+#define SIZE 1024
+
+int array[SIZE];
+
+struct b_s {
+  int n;
+  pthread_mutex_t m;
+  pthread_cond_t ll;
+} b;
+
+
+void exercise04(void) {
+  pthread_t thread[N];
+  
+  	
+  b.n = 0;
+  pthread_mutex_init(&b.m, NULL);
+  pthread_cond_init(&b.ll, NULL);
+
+  
+  for(int i=0; i<N; i++)
+    pthread_create(&thread[i],  NULL, worker,  (void *)&i);
+  
+  for(int i=0; i<N; i++)
+    pthread_join(thread[i], NULL);
+
+  pthread_cond_destroy(&b.ll);
+  pthread_mutex_destroy(&b.m);
+ 
+}
+
+void *worker(void *arg) {
+
+  int start=0, end=0, id;
+
+  id  = *(int *)arg; 
+  start =(id)*(SIZE/N);
+  
+  end = (id+1)*(SIZE/N);
+  
+  for(int i=start; i<end; i++) {
+  	array[i] = id;
+  }
+  
+  pthread_mutex_lock(&b.m); 
+  b.n++; 
+  
+  if (N<=b.n) {	
+    pthread_cond_broadcast(&b.ll);
+  } 
+  else {
+  	pthread_cond_wait(&b.ll, &b.m); 
+  }
+  pthread_mutex_unlock(&b.m); 
+  	
 }
