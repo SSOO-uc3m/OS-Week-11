@@ -83,14 +83,14 @@ bool hello = true;
 void exercise02 () {
     pthread_cond_init(&printHello, NULL);
     pthread_cond_init(&printWorld, NULL);
-    char cadena_hola[]="Hello ";
-    char cadena_mundo[]="world \n";
+    char stringHello[]="Hello ";
+    char StringWorld[]="world \n";
   
     pthread_attr_init (&attr);
   
     for (int i=1; i<=N; i++) {
-        pthread_create(&thread2, &attr, print, (void *)cadena_mundo);
-        pthread_create(&thread1, &attr, print, (void *)cadena_hola);
+        pthread_create(&thread2, &attr, print, (void *)StringWorld);
+        pthread_create(&thread1, &attr, print, (void *)stringHello);
     }
     pthread_exit (NULL);
 }
