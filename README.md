@@ -230,17 +230,16 @@ bool printHi = true;
 ````
 void exercise02 (void)
 {
-    pthread_cond_init(&imprimirHola, NULL);
-    pthread_cond_init(&imprimirMundo, NULL);
-    char cadena_hola[]="Hola ";
-    char cadena_mundo[]="mundo \n";
-    int i;
+    pthread_cond_init(&printHello, NULL);
+    pthread_cond_init(&printWorld, NULL);
+    char stringHello[]="Hello ";
+    char StringWorld[]="world \n";
+  
     pthread_attr_init (&attr);
-    for (i=1; i<=N; i++) {
-        pthread_create(&thread2, &attr, 
-	imprimir, (void *)cadena_mundo);
-        pthread_create(&thread1, &attr, 
-	imprimir, (void *)cadena_hola);
+  
+    for (int i=1; i<=N; i++) {
+        pthread_create(&thread2, &attr, print, (void *)StringWorld);
+        pthread_create(&thread1, &attr, print, (void *)stringHello);
     }
     pthread_exit (NULL);
 }
@@ -254,24 +253,24 @@ Implementation of function print()
 ````
 void *print (void *arg) {
   
-        char stringHi[] = "Hello ";
+        char stringHello[] = "Hello ";
         char a[12];
         pthread_mutex_lock (&printer);
         strcpy(a, (char*)arg);
-        if (strncmp(a,stringHi,5)==0) {
-          while (!printHi) {                          
+        if (strncmp(a,stringHello,5)==0) {
+          while (!hello) {                          
                     pthread_cond_wait(&printHello,&printer);
           }
           printf("%s", a);
-          printHi = false;
+          hello = false;
           pthread_cond_signal(&printWorld);
         } 
         else {
-                while (printHi){
+                while (hello){
                     pthread_cond_wait(&printWorld,&printer);
                 }
                 printf("%s", a);
-                printHi = true;
+                hello = true;
                 pthread_cond_signal(&printHello);
         }
         pthread_mutex_unlock (&printer);

@@ -1,6 +1,5 @@
 
 int main(void) {
- exercise05();
-  
+  exercise02();
   return 0;
 }
