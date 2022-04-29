@@ -105,7 +105,7 @@ void *oddThread(void *arg) {
 
 
 ```
-#### Option B
+#### Option B CORRECT
 
 ```
 void *evenThread(void *arg) {
