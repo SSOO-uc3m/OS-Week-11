@@ -1,4 +1,4 @@
-# Lab 10 Introduction to concurrency
+# Lab 11 Mutex concurrency
 
 ## Goals
 
@@ -282,7 +282,7 @@ void *print (void *arg) {
 
 After executing the program, which of the following results could we obtain on the screen?
 
-#### Option a
+#### Option a CORRECT
 
 ````
 Hello world
@@ -346,7 +346,7 @@ void * writer(void * p) {
             pthread_cond_wait(&writing,&mutex);
         isWriting++;
         pthread_mutex_unlock(&mutex);
-        sleep(1); //tardo 1 sg en escribir
+        sleep(1); //takes 1 sec to write
         data+=2;
         printf("writer %ld: Dato = %d\n", i, data);
         pthread_mutex_lock(&mutex);
@@ -362,8 +362,11 @@ void * writer(void * p) {
 Which alternative to the readers and writers problem is solved by the following code? 
 
 - Priority for Readers 
-- Priority for Writers
-- 
+- Priority for Writers CORRECT
+
+When a writer wishes to access to the critical section no
+more readers are admitted.
+  
 ###  Exercise 04
 
 Indicate what the following code does
@@ -395,6 +398,9 @@ void exercise04(void) {
   pthread_mutex_init(&b.m, NULL);
   pthread_cond_init(&b.ll, NULL);
 
+  for(int i=start; i<end; i++) {
+  	array[i] = id;
+  }
   
   for(int i=0; i<N; i++)
     pthread_create(&thread[i],  NULL, worker,  (void *)&i);
@@ -415,12 +421,11 @@ void *worker(void *arg) {
   start =(id)*(SIZE/N);
   
   end = (id+1)*(SIZE/N);
-  
-  for(int i=start; i<end; i++) {
-  	array[i] = id;
-  }
+
+  printf("id %d start:%d end:%d\n",id,start,end);
   
   pthread_mutex_lock(&b.m); 
+  
   b.n++; 
   
   if (N<=b.n) {	
@@ -435,6 +440,14 @@ void *worker(void *arg) {
 
 
 ````
+
+SOLUTION
+
+The main process will create 10 lightweight processes. Each of these lightweight processes establishes a range (start… end) in which to store values in the vector. When each worker finishes storing values, he increments b.n and asks if b.n is equal to N:
+•	If the process is not the last: (n <= N) then the process goes to sleep.
+•	If the process is the last one (n> N) then the process wakes up all dormant light processes.
+The main process waits at the end for the light processes.
+
 
 ###  Exercise 05
 

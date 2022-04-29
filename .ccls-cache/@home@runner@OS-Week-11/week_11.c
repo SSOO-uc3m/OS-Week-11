@@ -53,13 +53,33 @@ void exercise01(){
   
 }
    
-
-void *evenThread(void *arg) {   
-
+void *evenThread(void *arg) {
+   
+    for(int i=0; i < 100; i++ ) {
+      pthread_mutex_lock (&mutex);
+      if (!even)  {
+	      pthread_cond_wait(&waitOdd,&mutex);
+      }
+      printf ("EvenThread = %d\n", shared_data++);
+	  
+	    even=true;
+      pthread_cond_signal(&waitEven);
+      pthread_mutex_unlock(&mutex);
+    }
 }
 
 void *oddThread(void *arg) {
-
+    for(int i=0; i < 100; i++ ) {
+      pthread_mutex_lock (&mutex);
+      if (even)  {
+	      pthread_cond_wait(&waitEven,&mutex);
+      }
+      printf ("OddThread = %d\n", shared_data++);
+	  
+	    even=false;
+      pthread_cond_signal(&waitOdd);
+      pthread_mutex_unlock(&mutex);
+    }
 }
 
 /*******************************************************
@@ -194,21 +214,28 @@ struct b_s {
 
 void exercise04(void) {
   pthread_t thread[N];
+  int * id;
   
   	
   b.n = 0;
   pthread_mutex_init(&b.m, NULL);
   pthread_cond_init(&b.ll, NULL);
 
-  
-  for(int i=0; i<N; i++)
-    pthread_create(&thread[i],  NULL, worker,  (void *)&i);
-  
+  for(int i=0; i<N; i++){
+    id = malloc(sizeof(int));
+    *id = i;
+    pthread_create(&thread[i],  NULL, worker,  (void *)id);
+    }
   for(int i=0; i<N; i++)
     pthread_join(thread[i], NULL);
 
   pthread_cond_destroy(&b.ll);
   pthread_mutex_destroy(&b.m);
+
+  for(int i=0;i<SIZE; i++){
+    printf("%d ",array[i]);
+  }
+  printf("\n");
  
 }
 
@@ -220,6 +247,8 @@ void *worker(void *arg) {
   start =(id)*(SIZE/N);
   
   end = (id+1)*(SIZE/N);
+
+  printf("id %d start %d end %d\n",id,start,end);
   
   for(int i=start; i<end; i++) {
   	array[i] = id;
@@ -236,4 +265,98 @@ void *worker(void *arg) {
   }
   pthread_mutex_unlock(&b.m); 
   	
+}
+
+/*******************************************************
+
+Exercise 05
+
+
+********************************************************/
+
+// maximum items a producer can produce or a consumer can consume
+#define MAX_ITEMS 10000 
+
+ // Size of the buffer
+#define BUFFER_SIZE 100
+#define NUMBER_PRODUCERS 1
+#define NUMBER_CONSUMERS 1
+
+int in = 0;
+int out = 0;
+int buffer[BUFFER_SIZE];
+
+sem_t elements; /* elements in buffer*/
+sem_t holes; /* holes in buffer*/
+
+
+void *producer(void *threadid){     
+  
+		int pno = (intptr_t) threadid;
+    int item;
+    srand(time(0));
+  
+    for(int i = 0; i < MAX_ITEMS/NUMBER_PRODUCERS; i++) {		
+      item = rand() % 100 + 1; // Produce an random item between 1 and 100		
+
+      sem_wait(&holes);
+
+      buffer[in] = item;
+		
+      printf("Producer %d: Insert Item %d at %d\n", pno,buffer[in],in);
+      in = (in+1)%BUFFER_SIZE;
+		
+		  sem_post(&elements); /* buffer is not empty */
+      
+    }
+	
+	return NULL;
+}
+
+void *consumer(void *threadid){   
+  
+    int cno = (intptr_t) threadid;
+    int item;
+  
+    for(int i = 0; i < MAX_ITEMS/NUMBER_CONSUMERS; i++) {
+            
+		  sem_wait(&elements);
+      
+      item = buffer[out];
+      printf("Consumer %d: Remove Item %d from %d\n", cno,item, out);
+      out = (out+1)%BUFFER_SIZE;
+      
+		  sem_post(&holes); /* buffer is not full */
+      
+    }
+	
+	return NULL;
+}
+
+void exercise05(){   
+   
+  pthread_t pro[NUMBER_PRODUCERS],con[NUMBER_CONSUMERS];
+
+	sem_init(&elements, 0, 0);
+  sem_init(&holes, 0, BUFFER_SIZE);
+	
+  for(int i = 0; i < NUMBER_PRODUCERS; i++) {
+        pthread_create(&pro[i], NULL, (void *)producer, (void *) (intptr_t) i+1);
+    }
+  
+  for(int i = 0; i < NUMBER_CONSUMERS; i++) { 
+        pthread_create(&con[i], NULL, (void *)consumer, (void *) (intptr_t) i+1);
+    }
+
+  for(int i = 0; i < NUMBER_PRODUCERS; i++) {
+        pthread_join(pro[i], NULL);
+    }
+  
+  for(int i = 0; i < NUMBER_CONSUMERS; i++) {
+        pthread_join(con[i], NULL);
+    }
+
+  sem_destroy(&elements);
+  sem_destroy(&holes);
+    
 }

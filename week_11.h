@@ -19,4 +19,6 @@ void exercise04();
 
 void *worker(void *arg);
 
+void exercise05();
+
 #endif /* WEEK_11_H */
