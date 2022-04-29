@@ -78,7 +78,7 @@ pthread_mutex_t printer=PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t printHello;
 pthread_cond_t printWorld;
   
-bool printHi = true;
+bool hello = true;
 
 void exercise02 () {
     pthread_cond_init(&printHello, NULL);
@@ -97,24 +97,24 @@ void exercise02 () {
 
 void *print (void *arg) {
   
-        char stringHi[] = "Hello ";
+        char stringHello[] = "Hello ";
         char a[12];
         pthread_mutex_lock (&printer);
         strcpy(a, (char*)arg);
-        if (strncmp(a,stringHi,5)==0) {
-          while (!printHi) {                          
+        if (strncmp(a,stringHello,5)==0) {
+          while (!hello) {                          
                     pthread_cond_wait(&printHello,&printer);
           }
           printf("%s", a);
-          printHi = false;
+          hello = false;
           pthread_cond_signal(&printWorld);
         } 
         else {
-                while (printHi){
+                while (hello){
                     pthread_cond_wait(&printWorld,&printer);
                 }
                 printf("%s", a);
-                printHi = true;
+                hello = true;
                 pthread_cond_signal(&printHello);
         }
         pthread_mutex_unlock (&printer);

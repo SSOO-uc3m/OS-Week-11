@@ -224,23 +224,23 @@ pthread_mutex_t printer=PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t printHello;
 pthread_cond_t printWorld;
   
-bool printHi = true;
+bool hello = true;
 ````
 
 ````
 void exercise02 (void)
 {
-    pthread_cond_init(&imprimirHola, NULL);
-    pthread_cond_init(&imprimirMundo, NULL);
-    char cadena_hola[]="Hola ";
-    char cadena_mundo[]="mundo \n";
+    pthread_cond_init(&printHello, NULL);
+    pthread_cond_init(&printWorld, NULL);
+    char stringHello[]="Hello ";
+    char stringWorld[]="world \n";
     int i;
     pthread_attr_init (&attr);
     for (i=1; i<=N; i++) {
         pthread_create(&thread2, &attr, 
-	imprimir, (void *)cadena_mundo);
+	imprimir, (void *)stringWorld);
         pthread_create(&thread1, &attr, 
-	imprimir, (void *)cadena_hola);
+	imprimir, (void *)stringHello);
     }
     pthread_exit (NULL);
 }
@@ -254,24 +254,24 @@ Implementation of function print()
 ````
 void *print (void *arg) {
   
-        char stringHi[] = "Hello ";
+        char stringHello[] = "Hello ";
         char a[12];
         pthread_mutex_lock (&printer);
         strcpy(a, (char*)arg);
-        if (strncmp(a,stringHi,5)==0) {
-          while (!printHi) {                          
+        if (strncmp(a,stringHello,5)==0) {
+          while (!hello) {                          
                     pthread_cond_wait(&printHello,&printer);
           }
           printf("%s", a);
-          printHi = false;
+          hello = false;
           pthread_cond_signal(&printWorld);
         } 
         else {
-                while (printHi){
+                while (hello){
                     pthread_cond_wait(&printWorld,&printer);
                 }
                 printf("%s", a);
-                printHi = true;
+                hello = true;
                 pthread_cond_signal(&printHello);
         }
         pthread_mutex_unlock (&printer);
@@ -389,21 +389,27 @@ struct b_s {
 
 void exercise04(void) {
   pthread_t thread[N];
+  int * id;
   
-  	
   b.n = 0;
   pthread_mutex_init(&b.m, NULL);
   pthread_cond_init(&b.ll, NULL);
 
-  
-  for(int i=0; i<N; i++)
-    pthread_create(&thread[i],  NULL, worker,  (void *)&i);
-  
+  for(int i=0; i<N; i++){
+    id = malloc(sizeof(int));
+    *id = i;
+    pthread_create(&thread[i],  NULL, worker,  (void *)id);
+    }
   for(int i=0; i<N; i++)
     pthread_join(thread[i], NULL);
 
   pthread_cond_destroy(&b.ll);
   pthread_mutex_destroy(&b.m);
+
+  for(int i=0;i<SIZE; i++){
+    printf("%d ",array[i]);
+  }
+  printf("\n");;
  
 }
 
