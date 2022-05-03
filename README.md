@@ -38,7 +38,7 @@ EvenThread = 6
 #include <stdbool.h>
 
 int shared_data = 0;
-bool even;
+bool even = true;
 
 pthread_mutex_t mutex;
 pthread_cond_t waitEven;
@@ -105,9 +105,10 @@ void *oddThread(void *arg) {
 
 
 ```
-#### Option B CORRECT
+#### Option B 
 
 ```
+
 void *evenThread(void *arg) {
    
     for(int i=0; i < 100; i++ ) {
@@ -117,7 +118,7 @@ void *evenThread(void *arg) {
       }
       printf ("EvenThread = %d\n", shared_data++);
 	  
-	    even=true;
+	    even=false;
       pthread_cond_signal(&waitEven);
       pthread_mutex_unlock(&mutex);
     }
@@ -131,14 +132,14 @@ void *oddThread(void *arg) {
       }
       printf ("OddThread = %d\n", shared_data++);
 	  
-	    even=false;
+	    even=true;
       pthread_cond_signal(&waitOdd);
       pthread_mutex_unlock(&mutex);
     }
 }
 
 ```
-#### Option C
+#### Option C CORRECT
 
 ```
 void *evenThread(void *arg) {

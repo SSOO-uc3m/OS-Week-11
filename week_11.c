@@ -24,7 +24,7 @@ We want the execution to provide the following output on screen:
 ********************************************************/
 
 int shared_data = 0;
-bool even = false;
+bool even = true;
 
 pthread_mutex_t mutex;
 pthread_cond_t waitEven;
@@ -33,7 +33,7 @@ pthread_cond_t waitOdd;
 void exercise01(){
   
   pthread_t th1, th2;
-    
+
   pthread_mutex_init (&mutex, NULL);
   pthread_cond_init (&waitEven, NULL);
   pthread_cond_init (&waitOdd, NULL);
@@ -62,7 +62,7 @@ void *evenThread(void *arg) {
       }
       printf ("EvenThread = %d\n", shared_data++);
 	  
-	    even=true;
+	    even=false;
       pthread_cond_signal(&waitEven);
       pthread_mutex_unlock(&mutex);
     }
@@ -76,7 +76,7 @@ void *oddThread(void *arg) {
       }
       printf ("OddThread = %d\n", shared_data++);
 	  
-	    even=false;
+	    even=true;
       pthread_cond_signal(&waitOdd);
       pthread_mutex_unlock(&mutex);
     }
@@ -288,7 +288,7 @@ int buffer[BUFFER_SIZE];
 
 sem_t elements; /* elements in buffer*/
 sem_t holes; /* holes in buffer*/
-
+sem_t mutexBuffer;
 
 void *producer(void *threadid){     
   
@@ -300,9 +300,12 @@ void *producer(void *threadid){
       item = rand() % 100 + 1; // Produce an random item between 1 and 100		
 
       sem_wait(&holes);
-
+      
+      sem_wait(&mutexBuffer);
+      
       buffer[in] = item;
-		
+      
+		  sem_post(&mutexBuffer);
       printf("Producer %d: Insert Item %d at %d\n", pno,buffer[in],in);
       in = (in+1)%BUFFER_SIZE;
 		
@@ -322,7 +325,12 @@ void *consumer(void *threadid){
             
 		  sem_wait(&elements);
       
+      sem_wait(&mutexBuffer);
+      
       item = buffer[out];
+
+      sem_post(&mutexBuffer);
+      
       printf("Consumer %d: Remove Item %d from %d\n", cno,item, out);
       out = (out+1)%BUFFER_SIZE;
       
@@ -336,12 +344,14 @@ void *consumer(void *threadid){
 void exercise05(){   
    
   pthread_t pro[NUMBER_PRODUCERS],con[NUMBER_CONSUMERS];
+  
+	sem_init(&mutexBuffer, 0, 1);
 
 	sem_init(&elements, 0, 0);
   sem_init(&holes, 0, BUFFER_SIZE);
 	
   for(int i = 0; i < NUMBER_PRODUCERS; i++) {
-        pthread_create(&pro[i], NULL, (void *)producer, (void *) (intptr_t) i+1);
+        pthread_create(&pro[i], NULL, producer, (void *) (intptr_t) i+1);
     }
   
   for(int i = 0; i < NUMBER_CONSUMERS; i++) { 
@@ -358,5 +368,5 @@ void exercise05(){
 
   sem_destroy(&elements);
   sem_destroy(&holes);
-    
+     sem_destroy(&mutex);
 }
