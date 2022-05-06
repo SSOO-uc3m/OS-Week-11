@@ -194,15 +194,18 @@ struct b_s {
 
 void exercise04(void) {
   pthread_t thread[N];
-  
+  int * number; 
   	
   b.n = 0;
   pthread_mutex_init(&b.m, NULL);
   pthread_cond_init(&b.ll, NULL);
 
   
-  for(int i=0; i<N; i++)
-    pthread_create(&thread[i],  NULL, worker,  (void *)&i);
+  for(int i=0; i<N; i++){
+    number = malloc (sizeof(int));
+    number = i;
+    pthread_create(&thread[i],  NULL, worker,  (void *)number);
+    }
   
   for(int i=0; i<N; i++)
     pthread_join(thread[i], NULL);
@@ -214,15 +217,15 @@ void exercise04(void) {
 
 void *worker(void *arg) {
 
-  int start=0, end=0, id;
-
-  id  = *(int *)arg; 
-  start =(id)*(SIZE/N);
+  int start=0, end=0;
+  int * id;
+  id  = (int *)arg; 
+  start =(*id)*(SIZE/N);
   
-  end = (id+1)*(SIZE/N);
+  end = (*id+1)*(SIZE/N);
   
   for(int i=start; i<end; i++) {
-  	array[i] = id;
+  	array[i] = *id;
   }
   
   pthread_mutex_lock(&b.m); 
@@ -235,5 +238,6 @@ void *worker(void *arg) {
   	pthread_cond_wait(&b.ll, &b.m); 
   }
   pthread_mutex_unlock(&b.m); 
-  	
+
+  free(id);
 }
