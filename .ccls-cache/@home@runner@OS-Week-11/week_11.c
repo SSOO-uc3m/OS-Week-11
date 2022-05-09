@@ -203,7 +203,7 @@ void exercise04(void) {
   
   for(int i=0; i<N; i++){
     number = malloc (sizeof(int));
-    number = i;
+    *number = i;
     pthread_create(&thread[i],  NULL, worker,  (void *)number);
     }
   
@@ -212,7 +212,16 @@ void exercise04(void) {
 
   pthread_cond_destroy(&b.ll);
   pthread_mutex_destroy(&b.m);
+  
+for(int i=0; i< SIZE; i++){
  
+
+    printf("array[%d] = %d\n", i,array[i]);  
+
+
+}
+
+  
 }
 
 void *worker(void *arg) {
@@ -224,20 +233,23 @@ void *worker(void *arg) {
   
   end = (*id+1)*(SIZE/N);
   
-  for(int i=start; i<end; i++) {
-  	array[i] = *id;
-  }
-  
   pthread_mutex_lock(&b.m); 
-  b.n++; 
-  
+
+   b.n++; 
+
   if (N<=b.n) {	
     pthread_cond_broadcast(&b.ll);
   } 
   else {
   	pthread_cond_wait(&b.ll, &b.m); 
   }
-  pthread_mutex_unlock(&b.m); 
+  
+  for(int i=start; i<end; i++) {
+  	array[i] = *id;
+  }
+  
+   pthread_mutex_unlock(&b.m); 
+ 
 
   free(id);
 }

@@ -1,4 +1,4 @@
-# Lab 10 Introduction to concurrency
+# Lab 11 Introduction to concurrency
 
 ## Goals
 
